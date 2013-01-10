@@ -1,0 +1,14 @@
+USE_OCAMLFIND = true
+
+OCAMLINCLUDES =
+
+OCAMLPACKS = oUnit xenctrl xenstore
+
+CLEAN_OBJS = *.cmi *.cmo *.cmx *.cma *.cmxa *.annot *.run *.opt *.o *.a *.cmt *.cmti
+
+OCamlProgram(grant_table_test, grant_table_test)
+
+.PHONY: clean
+clean:
+	rm -rf $(CLEAN_OBJS) *.aux *.log *.fig xapi
+	rm -f grant_table_test

@@ -6,4 +6,4 @@ obuild-ver: 1
 executable unit-tests
   src-dir: src
   main: unit_tests.ml
-  build-deps: oUnit, xenctrl
+  build-deps: bigarray, oUnit, xenctrl

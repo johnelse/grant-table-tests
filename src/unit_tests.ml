@@ -13,6 +13,7 @@
  *)
 
 open Bigarray
+open Gnt
 open OUnit
 
 module Init = struct
@@ -46,7 +47,7 @@ end
 
 module Globals = struct
 	open Helpers
-	let domid = 0l (*Helpers.with_xs (fun xs -> xs.Xs.read "domid" |> Int32.of_string)*)
+	let domid = 0 (*Helpers.with_xs (fun xs -> xs.Xs.read "domid" |> int_of_string)*)
 	let page_size = Xenmmap.getpagesize ()
 end
 
@@ -65,13 +66,13 @@ module Tests = struct
 	 * grant references, and a Bigarray mapping the correct amount of memory. *)
 	let gntshr_size_check page_count =
 		let handle = Gntshr.interface_open () in
-		let share = Gntshr.share_pages handle Globals.domid page_count false in
+		let share = Gntshr.share_pages_exn handle Globals.domid page_count false in
 		assert_equal ~msg:"Number of grant references should equal number of pages requested"
-			(List.length share.Gntshr.references) page_count;
-		let contents = Gntcommon.contents share.Gntshr.mapping in
+			(List.length share.Gntshr.refs) page_count;
+		let contents = share.Gntshr.mapping in
 		assert_equal ~msg:"Length of mapped memory should equal (page size * number of pages)"
 			(Array1.dim contents) (page_count * Globals.page_size);
-		Gntshr.munmap handle share;
+		Gntshr.munmap_exn handle share;
 		Gntshr.interface_close handle
 
 	(* Check that a shared page or pages can be mapped by gnttab, and that the
@@ -81,8 +82,8 @@ module Tests = struct
 		let handle_gs = Gntshr.interface_open () in
 		let handle_gt = Gnttab.interface_open () in
 		(* Share pages. *)
-		let share = Gntshr.share_pages handle_gs Globals.domid page_count false in
-		let share_contents = Gntcommon.contents share.Gntshr.mapping in
+		let share = Gntshr.share_pages_exn handle_gs Globals.domid page_count false in
+		let share_contents = share.Gntshr.mapping in
 		(* Fill the memory map with random data. *)
 		let random_data = Helpers.get_random_bigarray (page_count * Globals.page_size) in
 		Array1.blit random_data share_contents;
@@ -90,15 +91,15 @@ module Tests = struct
 		let grants = List.map
 			(fun reference -> {
 				Gnttab.domid = Globals.domid;
-				Gnttab.reference = reference
+				Gnttab.ref = reference
 			})
-			share.Gntshr.references
+			share.Gntshr.refs
 		in
-		match Gnttab.mapv handle_gt grants Gnttab.RO with
+		match Gnttab.mapv handle_gt grants false with
 		| None -> assert_failure "Failed to map memory"
 		| Some mapping -> begin
 			(* Check that the mapped memory contains the expected data. *)
-			let mapping_contents = Gntcommon.contents mapping in
+			let mapping_contents = Gnttab.Local_mapping.to_buf mapping in
 			for position = 0 to (Array1.dim random_data) - 1 do
 				let original_char = Array1.get share_contents position in
 				let mapped_char = Array1.get mapping_contents position in
@@ -113,7 +114,7 @@ module Tests = struct
 		end;
 		(* Unmap memory. *)
 		Gnttab.unmap_exn handle_gt mapping;
-		Gntshr.munmap handle_gs share;
+		Gntshr.munmap_exn handle_gs share;
 		(* Close interfaces. *)
 		Gnttab.interface_close handle_gt;
 		Gntshr.interface_close handle_gs

@@ -1,9 +1,3 @@
-*.cmi
-*.cmx
-*.o
-*.omc
-*.opt
+*.swp
 
-.omakedb*
-
-unit_tests
+dist/

@@ -1,0 +1,9 @@
+name: grant-table-tests
+version: 0.1.0
+synopsis: Test programs for dealing with Xen grant tables
+obuild-ver: 1
+
+executable unit-tests
+  src-dir: src
+  main: unit_tests.ml
+  build-deps: oUnit, xenctrl

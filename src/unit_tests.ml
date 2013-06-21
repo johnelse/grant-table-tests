@@ -47,7 +47,13 @@ end
 
 module Globals = struct
 	open Helpers
-	let domid = 0 (*Helpers.with_xs (fun xs -> xs.Xs.read "domid" |> int_of_string)*)
+
+	let domid =
+		try
+			let chan = Unix.open_process_in "xenstore-read domid" in
+			int_of_string (input_line chan)
+		with _ -> 0
+
 	let page_size = Xenmmap.getpagesize ()
 end
 

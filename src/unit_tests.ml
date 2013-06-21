@@ -32,10 +32,6 @@ end
 module Helpers = struct
 	let (|>) x f = f x
 
-	(*let with_xs f =
-		let xs = Xs.daemon_open () in
-		finally (fun () -> f xs) (fun () -> Xs.close xs)*)
-
 	let get_random_bigarray length =
 		let data = Array1.create Bigarray.char Bigarray.c_layout length in
 		for position = 0 to (length - 1) do

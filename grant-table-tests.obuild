@@ -3,7 +3,7 @@ version: 0.1.0
 synopsis: Test programs for dealing with Xen grant tables
 obuild-ver: 1
 
-executable unit-tests
+test unit-tests
   src-dir: src
   main: unit_tests.ml
   build-deps: bigarray, oUnit, xenctrl

@@ -47,7 +47,9 @@ module Globals = struct
 	let domid =
 		try
 			let chan = Unix.open_process_in "xenstore-read domid" in
-			int_of_string (input_line chan)
+			let domid = int_of_string (input_line chan) in
+			let (_: Unix.process_status) = Unix.close_process_in chan in
+			domid
 		with _ -> 0
 
 	let page_size = Xenmmap.getpagesize ()

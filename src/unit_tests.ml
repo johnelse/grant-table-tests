@@ -140,4 +140,5 @@ end
 let _ =
 	Init.sanity_check ();
 	Random.self_init();
+	Printf.printf "Assuming I am running in domid %d\n%!" Globals.domid;
 	run_test_tt_main Tests.base_suite
